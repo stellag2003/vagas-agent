@@ -1,0 +1,14 @@
+[
+  {
+    "titulo": "Desenvolvedor Backend Jr (Python/Django)",
+    "descricao": "Buscamos dev Python com Django, PostgreSQL, Git e API REST. Diferencial: Docker e AWS."
+  },
+  {
+    "titulo": "Frontend React Pleno",
+    "descricao": "React, TypeScript, CSS avançado, testes automatizados e CI/CD. Não exige backend."
+  },
+  {
+    "titulo": "Analista de Dados Jr",
+    "descricao": "SQL avançado, Excel, Power BI e Python (pandas/numpy). Vaga híbrida."
+  }
+]

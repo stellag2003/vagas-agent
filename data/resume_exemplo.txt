@@ -1,0 +1,3 @@
+Desenvolvedor(a) em formação na Programadores do Amanhã.
+Experiência com Python, SQL e Git. Conhecimento básico de Docker e APIs REST.
+Participei de projetos usando Flask e PostgreSQL. Estudando React e AWS.
