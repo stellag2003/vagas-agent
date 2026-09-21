@@ -1,8 +1,54 @@
+# --- MVP em Python (python-mvp/) ---
 __pycache__/
 *.pyc
 .pytest_cache/
 .venv/
 
 # Dados pessoais reais do candidato — nunca versionar (repo é público).
-# Use data/perfil_exemplo.json como template.
-data/perfil.json
+# Use python-mvp/data/perfil_exemplo.json como template.
+python-mvp/data/perfil.json
+
+# --- Monorepo Nx (apps/, libs/) ---
+node_modules
+
+# compiled output
+dist
+tmp
+out-tsc
+.next
+out
+test-output
+
+# Nx cache
+.nx/cache
+.nx/workspace-data
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+
+# System Files
+.DS_Store
+Thumbs.db

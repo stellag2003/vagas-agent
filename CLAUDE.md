@@ -5,60 +5,94 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## O que é este projeto
 
 Agente que lê um currículo e uma lista de vagas e retorna quais vagas combinam com o perfil, e por quê.
-O estado atual é um MVP: o "matching" é feito por sobreposição de palavras-chave técnicas entre currículo
-e descrição da vaga — **não é ainda um agente de IA de verdade** (sem LLM, sem embeddings). Essa base
-existe para provar que a lógica de ranking funciona antes de trocar por uma abordagem semântica. Ver
-`PROXIMOS_PASSOS.md` para os próximos passos já priorizados (nessa ordem): embeddings/LLM no lugar de
-keyword-matching, ingestão de vagas reais (API/scraping), parser de currículo real (PDF/DOCX), integração
-com LinkedIn, e explicação em linguagem natural do "porquê" do match.
+O matching é feito por sobreposição de palavras-chave técnicas entre currículo e descrição da vaga —
+**não é ainda um agente de IA de verdade** (sem LLM, sem embeddings). Ver `PROXIMOS_PASSOS.md` para os
+próximos passos priorizados (embeddings/LLM no lugar de keyword-matching, ingestão de vagas reais,
+parser de currículo real, integração com LinkedIn, explicação em linguagem natural do "porquê").
 
-## Comandos
+O projeto é um **monorepo Nx** com frontend React/Next.js e backend Node/NestJS. Há também um
+protótipo original em Python (`python-mvp/`), mantido como referência, não mais o ponto de entrada
+principal.
+
+## Comandos (monorepo Nx — raiz do repo)
 
 ```bash
-pip install -r requirements.txt
+npm install
 
-# Rodar o agente (imprime ranking de vagas x currículo)
-python -m src.agent --resume data/resume_exemplo.txt --jobs data/vagas_exemplo.json
+npx nx dev frontend      # Next.js em http://localhost:4200
+npx nx serve backend     # NestJS em http://localhost:3000/api
 
-# Com --perfil opcional, também imprime os dados básicos do candidato
-python -m src.agent --resume data/resume_exemplo.txt --jobs data/vagas_exemplo.json --perfil data/perfil_exemplo.json
+npx nx run-many -t test  # roda os testes de todos os projetos
+npx nx test matching     # testes só da lib de domínio
+npx nx test backend      # testes só do backend
+npx nx test frontend     # testes só do frontend
 
-# Rodar todos os testes
-pytest tests/ -v
-
-# Rodar um teste específico
-pytest tests/test_matcher.py::test_match_parcial_calcula_proporcao_correta -v
+npx nx graph             # visualiza as dependências entre projetos do monorepo
 ```
 
-Não há linter/formatter configurado no projeto.
+Não há linter configurado no monorepo (gerado com `--linter=none` no frontend).
 
-## Arquitetura
+## Comandos (protótipo Python — `python-mvp/`)
 
-Pipeline linear de 3 estágios, cada um em seu próprio módulo:
+```bash
+cd python-mvp
+pip install -r requirements.txt
+python -m src.agent --resume data/resume_exemplo.txt --jobs data/vagas_exemplo.json --perfil data/perfil_exemplo.json
+pytest tests/ -v
+```
 
-1. **`src/parser.py`** — `extrair_skills(texto)` extrai um `set[str]` de skills de um texto livre,
-   comparando contra o vocabulário fixo `SKILLS_CONHECIDAS`. É a única fonte de "o que conta como skill"
-   no sistema; currículo e descrição de vaga passam pela mesma função. Termos são casados como
-   palavra/frase inteira (regex com lookaround `(?<!\w)...(?!\w)`), não substring — por isso o vocabulário
-   entra em minúsculas e sem acentuação especial.
+## Arquitetura do monorepo
 
-2. **`src/matcher.py`** — `calcular_match(skills_perfil, skills_vaga, vaga_titulo)` calcula o score de uma
-   vaga (`len(interseção) / len(skills_vaga)`); `ranquear_vagas(texto_perfil, vagas)` orquestra: extrai
-   skills do currículo uma vez, extrai skills de cada vaga, calcula match e ordena por score decrescente.
-   Retorna `list[ResultadoMatch]` (dataclass com `vaga_titulo`, `score`, `skills_em_comum`,
-   `skills_faltando`). Vaga cuja descrição não bate com nenhuma skill conhecida recebe score 0 (o sistema
-   nunca afirma compatibilidade sem evidência).
+```
+apps/frontend/   Next.js (App Router) — formulário de currículo + vagas, chama a API e mostra o ranking
+apps/backend/    NestJS — API REST
+libs/matching/   lógica de domínio pura (sem framework), consumida pelo backend via DI
+python-mvp/      protótipo original em Python (referência)
+```
 
-3. **`src/perfil.py`** — dataclass `Perfil` (nome, email, telefone, linkedin, cidade, curriculo_path) com
-   `carregar_perfil`/`salvar_perfil` para persistir os dados básicos que toda candidatura pede, evitando
-   redigitá-los a cada vaga. O perfil real vive em `data/perfil.json`, que é ignorado pelo git (repositório
-   é público) — `data/perfil_exemplo.json` é o template versionado. Esse módulo é a base para o próximo
-   passo de auto-preenchimento/candidatura assistida.
+### `libs/matching` — domínio, com SOLID
 
-4. **`src/agent.py`** — CLI (`argparse`) que lê `--resume` (`.txt`) e `--jobs` (`.json`, lista de objetos
-   `{"titulo", "descricao"}`), chama `ranquear_vagas` e imprime o ranking formatado. `--perfil` (opcional)
-   carrega um `Perfil` e imprime os dados básicos do candidato junto ao ranking.
+Porta para TypeScript a lógica que estava em `python-mvp/src/parser.py` e `matcher.py`, desenhada em
+torno de duas abstrações que o `JobRanker` consome por injeção de dependência (nunca instancia
+diretamente) — trocar a extração de skills por embeddings/LLM no futuro não deve exigir mudar o
+`JobRanker` nem os consumidores dele:
 
-Como o vocabulário de skills é um `set` fixo em `parser.py`, sinônimos não normalizados (ex.: "React" vs
-"ReactJS") são tratados como termos diferentes — essa é a limitação central que a troca para
-embeddings/LLM (item 1 de `PROXIMOS_PASSOS.md`) resolve.
+- **`SkillExtractor`** (interface) → `KeywordSkillExtractor` (implementação atual: casa termos de
+  `SKILLS_CONHECIDAS` contra o texto via regex).
+- **`MatchCalculator`** (interface) → `OverlapMatchCalculator` (score = interseção / skills da vaga).
+- **`JobRanker`** — recebe as duas abstrações no construtor e expõe `ranquear(textoPerfil, vagas)`,
+  ordenado por score decrescente.
+
+Cada classe tem uma única responsabilidade (extrair, calcular, orquestrar/ordenar), e novas
+implementações das interfaces não quebram as existentes (Open/Closed).
+
+### `apps/backend` — NestJS em MVC
+
+O módulo de referência do padrão é [`apps/backend/src/app/vagas`](apps/backend/src/app/vagas):
+
+- **`VagasController`** (Controller) — só HTTP: recebe `POST /api/vagas/ranking`, valida o corpo via
+  `RankingRequestDto` (`class-validator`/`class-transformer`, com `ValidationPipe` global em
+  `main.ts`), delega ao service.
+- **`VagasService`** (Model/serviço) — instancia um `JobRanker` a partir das abstrações injetadas via
+  os tokens `SKILL_EXTRACTOR`/`MATCH_CALCULATOR` (`vagas.tokens.ts`) e serializa `Set<string>` para
+  `string[]` (JSON não serializa `Set`).
+- **`VagasModule`** — liga os tokens às implementações concretas de `@org/matching`
+  (`useClass: KeywordSkillExtractor` / `OverlapMatchCalculator`). É o único lugar que conhece as
+  implementações concretas — Dependency Inversion Principle aplicado via Nest DI.
+
+Novos recursos (ex.: perfil do candidato, candidatura assistida) devem seguir o mesmo padrão: pasta
+por feature em `apps/backend/src/app/<feature>/` com `*.controller.ts` + `*.service.ts` + `dto/`, e
+lógica de domínio reutilizável (se houver) em uma lib própria dentro de `libs/`.
+
+### `apps/frontend` — Next.js
+
+Client component em `src/app/page.tsx` (form de currículo + vagas), chamando a API através de
+`src/services/vagas-api.ts` — o único módulo que sabe a URL da API e o formato da requisição HTTP
+(a UI não faz `fetch` diretamente). URL da API configurável via `NEXT_PUBLIC_API_URL` (padrão
+`http://localhost:3000/api`).
+
+## Importando `@org/matching`
+
+A lib é resolvida como pacote de workspace npm (`"@org/matching"`, ver `libs/matching/package.json`).
+Em dev, o `customConditions: ["@org/source"]` em `tsconfig.base.json` faz os imports apontarem direto
+para `libs/matching/src/index.ts` (sem precisar buildar a lib antes de rodar/testar).
