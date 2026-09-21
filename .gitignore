@@ -2,3 +2,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .venv/
+
+# Dados pessoais reais do candidato — nunca versionar (repo é público).
+# Use data/perfil_exemplo.json como template.
+data/perfil.json

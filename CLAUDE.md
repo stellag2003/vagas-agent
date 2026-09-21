@@ -20,6 +20,9 @@ pip install -r requirements.txt
 # Rodar o agente (imprime ranking de vagas x currículo)
 python -m src.agent --resume data/resume_exemplo.txt --jobs data/vagas_exemplo.json
 
+# Com --perfil opcional, também imprime os dados básicos do candidato
+python -m src.agent --resume data/resume_exemplo.txt --jobs data/vagas_exemplo.json --perfil data/perfil_exemplo.json
+
 # Rodar todos os testes
 pytest tests/ -v
 
@@ -46,8 +49,15 @@ Pipeline linear de 3 estágios, cada um em seu próprio módulo:
    `skills_faltando`). Vaga cuja descrição não bate com nenhuma skill conhecida recebe score 0 (o sistema
    nunca afirma compatibilidade sem evidência).
 
-3. **`src/agent.py`** — CLI (`argparse`) que lê `--resume` (`.txt`) e `--jobs` (`.json`, lista de objetos
-   `{"titulo", "descricao"}`), chama `ranquear_vagas` e imprime o ranking formatado.
+3. **`src/perfil.py`** — dataclass `Perfil` (nome, email, telefone, linkedin, cidade, curriculo_path) com
+   `carregar_perfil`/`salvar_perfil` para persistir os dados básicos que toda candidatura pede, evitando
+   redigitá-los a cada vaga. O perfil real vive em `data/perfil.json`, que é ignorado pelo git (repositório
+   é público) — `data/perfil_exemplo.json` é o template versionado. Esse módulo é a base para o próximo
+   passo de auto-preenchimento/candidatura assistida.
+
+4. **`src/agent.py`** — CLI (`argparse`) que lê `--resume` (`.txt`) e `--jobs` (`.json`, lista de objetos
+   `{"titulo", "descricao"}`), chama `ranquear_vagas` e imprime o ranking formatado. `--perfil` (opcional)
+   carrega um `Perfil` e imprime os dados básicos do candidato junto ao ranking.
 
 Como o vocabulário de skills é um `set` fixo em `parser.py`, sinônimos não normalizados (ex.: "React" vs
 "ReactJS") são tratados como termos diferentes — essa é a limitação central que a troca para

@@ -1,0 +1,8 @@
+{
+  "nome": "Fulano da Silva",
+  "email": "fulano@example.com",
+  "telefone": "(11) 90000-0000",
+  "linkedin": "https://linkedin.com/in/fulano-da-silva",
+  "cidade": "São Paulo, SP",
+  "curriculo_path": "data/resume_exemplo.txt"
+}

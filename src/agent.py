@@ -9,12 +9,17 @@ import json
 import sys
 
 from src.matcher import ranquear_vagas
+from src.perfil import carregar_perfil
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Agente de matching currículo x vagas")
     parser.add_argument("--resume", required=True, help="Caminho para o .txt do currículo")
     parser.add_argument("--jobs", required=True, help="Caminho para o .json com as vagas")
+    parser.add_argument(
+        "--perfil",
+        help="Caminho para o .json com os dados básicos do candidato (ver data/perfil_exemplo.json)",
+    )
     args = parser.parse_args()
 
     with open(args.resume, encoding="utf-8") as f:
@@ -24,6 +29,10 @@ def main() -> None:
         vagas = json.load(f)
 
     resultados = ranquear_vagas(texto_perfil, vagas)
+
+    if args.perfil:
+        perfil = carregar_perfil(args.perfil)
+        print(f"\nCandidato: {perfil.nome} <{perfil.email}> — {perfil.telefone}")
 
     print(f"\n{'VAGA':40} {'SCORE':>6}")
     print("-" * 50)
