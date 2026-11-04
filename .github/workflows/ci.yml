@@ -1,3 +1,9 @@
+# CI do vagas-agent (base: starter/ci-workflow/ci.yml da aula de Verificadores).
+#
+# Contrato com o package.json raiz: lint, typecheck, build, test e audit.
+# Cada job é um "sensor" independente; a branch protection da main exige
+# todos verdes antes de permitir merge.
+
 name: CI
 
 on:
@@ -6,51 +12,89 @@ on:
   pull_request:
     branches: [main]
 
+# Permissão mínima: os jobs só leem o repositório.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
-          cache: npm
+          node-version: '22'
+          cache: 'npm'
       - run: npm ci
+      # prettier --check . (o monorepo não tem ESLint configurado)
       - run: npm run lint
 
   typecheck:
+    name: Type check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
-          cache: npm
+          node-version: '22'
+          cache: 'npm'
       - run: npm ci
       - run: npm run typecheck
 
   build:
+    name: Build
     runs-on: ubuntu-latest
+    # Só builda se lint e type check passaram.
+    needs: [lint, typecheck]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
-          cache: npm
+          node-version: '22'
+          cache: 'npm'
       - run: npm ci
       - run: npm run build
 
   test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      # nx run-many -t test: matching, backend e frontend
+      - run: npm test
+
+  dependency-audit:
+    name: 'Dependency check: vulnerabilidade conhecida (npm audit)'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
-          cache: npm
+          node-version: '22'
+          cache: 'npm'
       - run: npm ci
-      - run: npm test
+      # npm audit --audit-level=high: falha com high/critical; moderate/low ficam no relatório.
+      - run: npm run audit
+
+  # Só em PR: compara as dependências que o PR adiciona contra a base.
+  # Repo público, então roda de graça (Dependency graph vem habilitado).
+  dependency-review:
+    name: 'Dependency check: revisão do PR (dependency-review-action)'
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
