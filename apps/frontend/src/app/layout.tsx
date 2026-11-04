@@ -2,7 +2,8 @@ import './global.css';
 
 export const metadata = {
   title: 'Agente de Matching de Vagas',
-  description: 'Compare seu currículo com vagas e veja o ranking de compatibilidade',
+  description:
+    'Compare seu currículo com vagas e veja o ranking de compatibilidade',
 };
 
 export default function RootLayout({

@@ -4,7 +4,9 @@ describe('KeywordSkillExtractor', () => {
   const extractor = new KeywordSkillExtractor();
 
   it('extrai skills conhecidas do texto', () => {
-    const skills = extractor.extrairSkills('Tenho experiência com Python, Git e Docker.');
+    const skills = extractor.extrairSkills(
+      'Tenho experiência com Python, Git e Docker.',
+    );
     expect(skills).toEqual(new Set(['python', 'git', 'docker']));
   });
 

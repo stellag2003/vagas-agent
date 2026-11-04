@@ -30,7 +30,17 @@ npx nx test frontend     # testes só do frontend
 npx nx graph             # visualiza as dependências entre projetos do monorepo
 ```
 
-Não há linter configurado no monorepo (gerado com `--linter=none` no frontend).
+Scripts de raiz (os mesmos que o CI em `.github/workflows/ci.yml` roda, um job cada):
+
+```bash
+npm run lint       # prettier --check . (não há ESLint; frontend gerado com --linter=none)
+npm run typecheck  # nx typecheck (backend, matching) + tsc --noEmit no frontend
+npm run build
+npm test
+```
+
+Se `@org/matching` "não for encontrado" localmente, os links de workspace em `node_modules/@org`
+provavelmente apontam para uma pasta antiga do projeto — rode `npm install` de novo.
 
 ## Comandos (protótipo Python — `python-mvp/`)
 

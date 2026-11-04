@@ -7,12 +7,48 @@ export interface SkillExtractor {
 
 // Vocabulário inicial. Adicione/edite os termos que fazem sentido para a vaga que você busca.
 export const SKILLS_CONHECIDAS: ReadonlySet<string> = new Set([
-  'python', 'javascript', 'typescript', 'java', 'sql', 'nosql', 'react', 'node',
-  'node.js', 'django', 'flask', 'fastapi', 'git', 'docker', 'kubernetes', 'aws',
-  'azure', 'gcp', 'linux', 'html', 'css', 'api', 'rest', 'graphql', 'postgresql',
-  'mysql', 'mongodb', 'redis', 'ci/cd', 'agile', 'scrum', 'testes automatizados',
-  'machine learning', 'ia', 'llm', 'pandas', 'numpy', 'excel', 'power bi',
-  'nestjs', 'next.js', 'nx',
+  'python',
+  'javascript',
+  'typescript',
+  'java',
+  'sql',
+  'nosql',
+  'react',
+  'node',
+  'node.js',
+  'django',
+  'flask',
+  'fastapi',
+  'git',
+  'docker',
+  'kubernetes',
+  'aws',
+  'azure',
+  'gcp',
+  'linux',
+  'html',
+  'css',
+  'api',
+  'rest',
+  'graphql',
+  'postgresql',
+  'mysql',
+  'mongodb',
+  'redis',
+  'ci/cd',
+  'agile',
+  'scrum',
+  'testes automatizados',
+  'machine learning',
+  'ia',
+  'llm',
+  'pandas',
+  'numpy',
+  'excel',
+  'power bi',
+  'nestjs',
+  'next.js',
+  'nx',
 ]);
 
 function normalizar(texto: string): string {
@@ -29,7 +65,9 @@ function escapeRegExp(termo: string): string {
  * agente final (ver KeywordSkillExtractor vs. uma futura implementação semântica).
  */
 export class KeywordSkillExtractor implements SkillExtractor {
-  constructor(private readonly vocabulario: ReadonlySet<string> = SKILLS_CONHECIDAS) {}
+  constructor(
+    private readonly vocabulario: ReadonlySet<string> = SKILLS_CONHECIDAS,
+  ) {}
 
   extrairSkills(texto: string): Set<string> {
     const textoNormalizado = normalizar(texto);

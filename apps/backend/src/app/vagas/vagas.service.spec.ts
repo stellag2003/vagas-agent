@@ -3,7 +3,10 @@ import { VagasService } from './vagas.service.js';
 
 describe('VagasService', () => {
   it('ranqueia vagas e serializa skills como arrays ordenados', () => {
-    const service = new VagasService(new KeywordSkillExtractor(), new OverlapMatchCalculator());
+    const service = new VagasService(
+      new KeywordSkillExtractor(),
+      new OverlapMatchCalculator(),
+    );
 
     const resultado = service.ranquear('Python, SQL e Docker', [
       { titulo: 'Vaga fraca', descricao: 'React e TypeScript' },

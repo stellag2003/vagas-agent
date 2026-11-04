@@ -8,11 +8,13 @@ const VAGAS_EXEMPLO = JSON.stringify(
   [
     {
       titulo: 'Desenvolvedor Backend Jr (Python/Django)',
-      descricao: 'Buscamos dev Python com Django, PostgreSQL, Git e API REST. Diferencial: Docker e AWS.',
+      descricao:
+        'Buscamos dev Python com Django, PostgreSQL, Git e API REST. Diferencial: Docker e AWS.',
     },
     {
       titulo: 'Frontend React Pleno',
-      descricao: 'React, TypeScript, CSS avançado, testes automatizados e CI/CD. Não exige backend.',
+      descricao:
+        'React, TypeScript, CSS avançado, testes automatizados e CI/CD. Não exige backend.',
     },
   ],
   null,
@@ -43,7 +45,11 @@ export default function Index() {
     try {
       setResultados(await ranquearVagas(curriculo, vagas));
     } catch (err) {
-      setErro(err instanceof Error ? err.message : 'Erro inesperado ao calcular o ranking.');
+      setErro(
+        err instanceof Error
+          ? err.message
+          : 'Erro inesperado ao calcular o ranking.',
+      );
     } finally {
       setCarregando(false);
     }
@@ -53,7 +59,8 @@ export default function Index() {
     <main className={styles.page}>
       <h1>Agente de Matching de Vagas</h1>
       <p className={styles.subtitle}>
-        Cole seu currículo e uma lista de vagas para ver o ranking de compatibilidade.
+        Cole seu currículo e uma lista de vagas para ver o ranking de
+        compatibilidade.
       </p>
 
       <form onSubmit={handleSubmit}>
@@ -69,7 +76,9 @@ export default function Index() {
         </div>
 
         <div className={styles.field}>
-          <label htmlFor="vagas">Vagas (JSON: [{'{ titulo, descricao }'}])</label>
+          <label htmlFor="vagas">
+            Vagas (JSON: [{'{ titulo, descricao }'}])
+          </label>
           <textarea
             id="vagas"
             rows={10}
@@ -78,7 +87,11 @@ export default function Index() {
           />
         </div>
 
-        <button type="submit" className={styles.submit} disabled={carregando || !curriculo.trim()}>
+        <button
+          type="submit"
+          className={styles.submit}
+          disabled={carregando || !curriculo.trim()}
+        >
           {carregando ? 'Calculando...' : 'Calcular ranking'}
         </button>
 
@@ -91,13 +104,19 @@ export default function Index() {
             <div key={r.vagaTitulo} className={styles.resultCard}>
               <div className={styles.resultHeader}>
                 <span>{r.vagaTitulo}</span>
-                <span className={styles.score}>{Math.round(r.score * 100)}%</span>
+                <span className={styles.score}>
+                  {Math.round(r.score * 100)}%
+                </span>
               </div>
               {r.skillsEmComum.length > 0 && (
-                <p className={styles.skillLine}>✓ Você já tem: {r.skillsEmComum.join(', ')}</p>
+                <p className={styles.skillLine}>
+                  ✓ Você já tem: {r.skillsEmComum.join(', ')}
+                </p>
               )}
               {r.skillsFaltando.length > 0 && (
-                <p className={styles.skillLine}>✗ Falta: {r.skillsFaltando.join(', ')}</p>
+                <p className={styles.skillLine}>
+                  ✗ Falta: {r.skillsFaltando.join(', ')}
+                </p>
               )}
             </div>
           ))}

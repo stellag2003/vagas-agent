@@ -2,7 +2,12 @@
   "name": "vagas-agent",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "lint": "prettier --check .",
+    "typecheck": "nx run-many -t typecheck && tsc -p apps/frontend/tsconfig.json --noEmit",
+    "build": "nx run-many -t build",
+    "test": "nx run-many -t test"
+  },
   "private": true,
   "devDependencies": {
     "@nestjs/schematics": "^11.0.0",
