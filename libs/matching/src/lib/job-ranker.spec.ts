@@ -17,4 +17,15 @@ describe('JobRanker', () => {
     expect(resultados[0].vagaTitulo).toBe('Vaga forte');
     expect(resultados[0].score).toBeGreaterThan(resultados[1].score);
   });
+
+  it('dá o mesmo score para vaga e currículo que escrevem a skill diferente', () => {
+    const [resultado] = ranker.ranquear('Sei React.js e Node.js', [
+      {
+        titulo: 'Full stack',
+        descricao: 'Buscamos pessoa com ReactJS e NodeJS',
+      },
+    ]);
+
+    expect(resultado.score).toBe(1);
+  });
 });

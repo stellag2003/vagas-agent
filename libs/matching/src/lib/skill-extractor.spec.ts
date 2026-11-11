@@ -14,4 +14,18 @@ describe('KeywordSkillExtractor', () => {
     const skills = extractor.extrairSkills('Sou muito organizado e proativo.');
     expect(skills.size).toBe(0);
   });
+
+  it('trata variações de escrita como a mesma skill canônica', () => {
+    const skills = extractor.extrairSkills(
+      'Experiência com ReactJS, NodeJS, Postgres e K8s.',
+    );
+    expect(skills).toEqual(
+      new Set(['react', 'node', 'postgresql', 'kubernetes']),
+    );
+  });
+
+  it('não conta Node.js duas vezes (node e node.js)', () => {
+    const skills = extractor.extrairSkills('Back-end em Node.js.');
+    expect(skills).toEqual(new Set(['node']));
+  });
 });
