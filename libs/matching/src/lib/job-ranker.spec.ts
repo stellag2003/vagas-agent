@@ -3,7 +3,10 @@ import { KeywordSkillExtractor } from './skill-extractor.js';
 import { OverlapMatchCalculator } from './match-calculator.js';
 
 describe('JobRanker', () => {
-  const ranker = new JobRanker(new KeywordSkillExtractor(), new OverlapMatchCalculator());
+  const ranker = new JobRanker(
+    new KeywordSkillExtractor(),
+    new OverlapMatchCalculator(),
+  );
 
   it('ordena as vagas da maior para a menor pontuação', () => {
     const resultados = ranker.ranquear('Python, SQL e Docker', [

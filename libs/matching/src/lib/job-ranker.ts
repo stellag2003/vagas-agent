@@ -20,7 +20,11 @@ export class JobRanker {
 
     const resultados = vagas.map((vaga) => {
       const skillsVaga = this.skillExtractor.extrairSkills(vaga.descricao);
-      return this.matchCalculator.calcular(skillsPerfil, skillsVaga, vaga.titulo);
+      return this.matchCalculator.calcular(
+        skillsPerfil,
+        skillsVaga,
+        vaga.titulo,
+      );
     });
 
     return resultados.sort((a, b) => b.score - a.score);

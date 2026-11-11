@@ -1,5 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { JobRanker, type MatchCalculator, type SkillExtractor, type Vaga } from '@org/matching';
+import {
+  JobRanker,
+  type MatchCalculator,
+  type SkillExtractor,
+  type Vaga,
+} from '@org/matching';
 import { MATCH_CALCULATOR, SKILL_EXTRACTOR } from './vagas.tokens.js';
 import type { RankingItemDto } from './dto/ranking-item.dto.js';
 
