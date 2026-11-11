@@ -15,7 +15,6 @@ export const SKILLS_CONHECIDAS: ReadonlySet<string> = new Set([
   'nosql',
   'react',
   'node',
-  'node.js',
   'django',
   'flask',
   'fastapi',
@@ -51,6 +50,24 @@ export const SKILLS_CONHECIDAS: ReadonlySet<string> = new Set([
   'nx',
 ]);
 
+/**
+ * Variações de escrita -> nome canônico (que precisa estar no vocabulário).
+ * Assim "ReactJS" e "React" viram a mesma skill e não contam como duas.
+ */
+export const SINONIMOS: Readonly<Record<string, string>> = {
+  'node.js': 'node',
+  nodejs: 'node',
+  reactjs: 'react',
+  'react.js': 'react',
+  js: 'javascript',
+  ts: 'typescript',
+  postgres: 'postgresql',
+  mongo: 'mongodb',
+  k8s: 'kubernetes',
+  nextjs: 'next.js',
+  'nest.js': 'nestjs',
+};
+
 function normalizar(texto: string): string {
   return texto.toLowerCase().replace(/\s+/g, ' ').trim();
 }
@@ -65,18 +82,37 @@ function escapeRegExp(termo: string): string {
  * agente final (ver KeywordSkillExtractor vs. uma futura implementação semântica).
  */
 export class KeywordSkillExtractor implements SkillExtractor {
+  // Termo encontrado no texto -> skill canônica, do termo mais longo para o mais curto.
+  private readonly termos: [string, string][];
+
   constructor(
-    private readonly vocabulario: ReadonlySet<string> = SKILLS_CONHECIDAS,
-  ) {}
+    vocabulario: ReadonlySet<string> = SKILLS_CONHECIDAS,
+    sinonimos: Readonly<Record<string, string>> = SINONIMOS,
+  ) {
+    const termos = new Map<string, string>();
+    for (const skill of vocabulario) termos.set(skill, skill);
+    for (const [variacao, canonica] of Object.entries(sinonimos)) {
+      if (vocabulario.has(canonica)) termos.set(variacao, canonica);
+    }
+    this.termos = [...termos].sort(([a], [b]) => b.length - a.length);
+  }
 
   extrairSkills(texto: string): Set<string> {
-    const textoNormalizado = normalizar(texto);
+    let restante = normalizar(texto);
     const encontradas = new Set<string>();
 
-    for (const skill of this.vocabulario) {
-      const padrao = new RegExp(`(?<!\\w)${escapeRegExp(skill)}(?!\\w)`);
-      if (padrao.test(textoNormalizado)) {
-        encontradas.add(skill);
+    for (const [termo, canonica] of this.termos) {
+      // Não casa logo depois de ponto: o "js" de "vue.js" ou o "ts" de ".tsx" não é
+      // a skill javascript/typescript.
+      const padrao = new RegExp(
+        `(?<![\\w.])${escapeRegExp(termo)}(?!\\w)`,
+        'g',
+      );
+      if (padrao.test(restante)) {
+        encontradas.add(canonica);
+        // Consome o trecho para um termo mais curto ("node") não casar de novo
+        // dentro de um mais longo ("node.js").
+        restante = restante.replace(padrao, ' ');
       }
     }
 
