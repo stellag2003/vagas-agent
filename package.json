@@ -7,7 +7,8 @@
     "typecheck": "nx run-many -t typecheck && tsc -p apps/frontend/tsconfig.json --noEmit",
     "build": "nx run-many -t build",
     "test": "nx run-many -t test",
-    "audit": "npm audit --audit-level=high"
+    "audit": "npm audit --audit-level=high",
+    "agents:sync": "node scripts/agents-sync.mjs"
   },
   "private": true,
   "devDependencies": {
