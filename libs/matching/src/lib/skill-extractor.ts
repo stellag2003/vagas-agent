@@ -102,7 +102,12 @@ export class KeywordSkillExtractor implements SkillExtractor {
     const encontradas = new Set<string>();
 
     for (const [termo, canonica] of this.termos) {
-      const padrao = new RegExp(`(?<!\\w)${escapeRegExp(termo)}(?!\\w)`, 'g');
+      // Não casa logo depois de ponto: o "js" de "vue.js" ou o "ts" de ".tsx" não é
+      // a skill javascript/typescript.
+      const padrao = new RegExp(
+        `(?<![\\w.])${escapeRegExp(termo)}(?!\\w)`,
+        'g',
+      );
       if (padrao.test(restante)) {
         encontradas.add(canonica);
         // Consome o trecho para um termo mais curto ("node") não casar de novo

@@ -28,4 +28,23 @@ describe('KeywordSkillExtractor', () => {
     const skills = extractor.extrairSkills('Back-end em Node.js.');
     expect(skills).toEqual(new Set(['node']));
   });
+
+  it('reconhece sinônimos curtos e com ponto (JS, TS, NextJS, Nest.js, Mongo)', () => {
+    const skills = extractor.extrairSkills('JS/TS, NextJS, Nest.js e Mongo');
+    expect(skills).toEqual(
+      new Set(['javascript', 'typescript', 'next.js', 'nestjs', 'mongodb']),
+    );
+  });
+
+  it('não confunde Next.js e Node.js com o sinônimo js', () => {
+    const skills = extractor.extrairSkills('Projetos em Next.js e Node.js');
+    expect(skills).toEqual(new Set(['next.js', 'node']));
+  });
+
+  it('não lê js/ts de frameworks fora do vocabulário nem de extensões', () => {
+    const skills = extractor.extrairSkills(
+      'Front-end com Vue.js, Express.js, D3.js e componentes .tsx',
+    );
+    expect(skills).toEqual(new Set());
+  });
 });
